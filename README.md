@@ -1,2 +1,2 @@
 # CALCULATOR
-This is simple Python code of Calculator.
+This is simple Python code of Calculator without GUI.
