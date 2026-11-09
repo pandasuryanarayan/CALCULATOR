@@ -19,9 +19,20 @@
 
       <section class="view active" id="view-calc">
       <div class="display">
-        <div class="history" id="history" aria-hidden="true"></div>
-        <div class="expression" id="expression" aria-live="polite">0</div>
-        <div class="preview" id="preview"></div>
+        <div class="display-top">
+          <button class="icon-btn" id="history-btn" aria-label="History">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8" />
+              <path d="M12 7.5v5l3.6 2.1" fill="none" stroke="currentColor" stroke-width="1.8"
+                    stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <span class="icon-badge" id="history-count" hidden>0</span>
+          </button>
+        </div>
+        <div class="display-bottom">
+          <div class="expression" id="expression" aria-live="polite">0</div>
+          <div class="preview" id="preview"></div>
+        </div>
       </div>
 
       <div class="keys" id="keys">
@@ -67,6 +78,19 @@
         <div class="conv-list" id="conv-list"></div>
       </section>
     </main>
+
+    <div class="sheet-backdrop" id="history-backdrop" hidden></div>
+    <aside class="sheet" id="history-sheet" hidden aria-label="Calculation history">
+      <header class="sheet-header">
+        <h2 class="sheet-title">History</h2>
+        <div class="sheet-actions">
+          <button class="sheet-btn danger" id="history-clear">Clear</button>
+          <button class="sheet-btn" id="history-close">Close</button>
+        </div>
+      </header>
+      <div class="sheet-body" id="history-list"></div>
+      <p class="sheet-empty" id="history-empty">No calculations yet.</p>
+    </aside>
 
     <script src="main.js" defer></script>
   </body>

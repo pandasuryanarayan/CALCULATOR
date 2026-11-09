@@ -11,7 +11,14 @@ function evaluateExpression(expression) {
 
 const expressionEl = document.getElementById("expression");
 const previewEl = document.getElementById("preview");
-const historyEl = document.getElementById("history");
+const historyListEl = document.getElementById("history-list");
+const historyEmptyEl = document.getElementById("history-empty");
+const historyCountEl = document.getElementById("history-count");
+const historyBtn = document.getElementById("history-btn");
+const historySheet = document.getElementById("history-sheet");
+const historyBackdrop = document.getElementById("history-backdrop");
+const historyClearBtn = document.getElementById("history-clear");
+const historyCloseBtn = document.getElementById("history-close");
 const keysEl = document.getElementById("keys");
 
 const OPERATORS = ["+", "-", "*", "/", "^"];
@@ -19,7 +26,10 @@ const OPERATORS = ["+", "-", "*", "/", "^"];
 let expression = "";
 let answer = null;
 let justEvaluated = false;
-let history = [];
+const HISTORY_LIMIT = 20;
+const HISTORY_KEY = "calculator.history.v1";
+
+let history = loadHistory();
 let previewSequence = 0;
 
 /* ---------- rendering ---------- */
@@ -50,16 +60,145 @@ function render() {
   expressionEl.classList.toggle("small", text.length > 12);
 }
 
+// Exponent results ("1e13") cannot be re-parsed as typed, so expand them
+// before feeding a result back into the expression.
+function chainable(value) {
+  if (!/e/i.test(value)) return value;
+  const number = Number(value);
+  if (!Number.isFinite(number)) return value;
+  return number.toFixed(20).replace(/0+$/, "").replace(/\.$/, "");
+}
+
+function loadHistory() {
+  try {
+    const raw = window.localStorage.getItem(HISTORY_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(
+        (entry) =>
+          entry &&
+          typeof entry.expression === "string" &&
+          typeof entry.result === "string",
+      )
+      .slice(0, HISTORY_LIMIT);
+  } catch {
+    return [];
+  }
+}
+
+function saveHistory() {
+  try {
+    window.localStorage.setItem(
+      HISTORY_KEY,
+      JSON.stringify(history.slice(0, HISTORY_LIMIT)),
+    );
+  } catch {
+    /* storage unavailable: keep the list in memory */
+  }
+}
+
+function addHistoryEntry(expressionText, result) {
+  history.unshift({ expression: expressionText, result });
+  if (history.length > HISTORY_LIMIT) history.length = HISTORY_LIMIT;
+  saveHistory();
+  renderHistory();
+}
+
 function renderHistory() {
-  historyEl.replaceChildren(
+  historyListEl.replaceChildren(
     ...history.map((entry) => {
-      const row = document.createElement("div");
-      row.className = "row";
-      row.textContent = `${pretty(entry.expression)} = ${pretty(entry.result)}`;
+      // Only plain decimals can be put back into the expression safely.
+      const reusable = /^-?\d+(\.\d+)?$/.test(entry.result);
+      const row = document.createElement(reusable ? "button" : "div");
+      row.className = reusable ? "history-row" : "history-row static";
+
+      const expressionPart = document.createElement("span");
+      expressionPart.className = "history-expr";
+      expressionPart.textContent = pretty(entry.expression);
+
+      const resultPart = document.createElement("span");
+      resultPart.className = "history-result";
+      resultPart.textContent = `= ${pretty(entry.result)}`;
+
+      row.append(expressionPart, resultPart);
+
+      if (reusable) {
+        row.addEventListener("click", () => {
+          expression = chainable(entry.result);
+          answer = null;
+          justEvaluated = false;
+          closeHistory();
+          render();
+          updatePreview();
+        });
+      }
+
       return row;
     }),
   );
+
+  historyEmptyEl.hidden = history.length > 0;
+  historyCountEl.textContent = String(history.length);
+  historyCountEl.hidden = history.length === 0;
+  historyClearBtn.disabled = history.length === 0;
 }
+
+function nextFrame(callback) {
+  if (typeof window.requestAnimationFrame === "function") {
+    window.requestAnimationFrame(callback);
+  } else {
+    window.setTimeout(callback, 16);
+  }
+}
+
+function openHistory() {
+  renderHistory();
+  historyBackdrop.hidden = false;
+  historySheet.hidden = false;
+  nextFrame(() => historySheet.classList.add("open"));
+}
+
+function closeHistory() {
+  historySheet.classList.remove("open");
+  window.setTimeout(() => {
+    historySheet.hidden = true;
+    historyBackdrop.hidden = true;
+  }, 180);
+  disarmClear();
+}
+
+let clearArmed = false;
+let clearTimer = 0;
+
+function disarmClear() {
+  clearArmed = false;
+  window.clearTimeout(clearTimer);
+  historyClearBtn.textContent = "Clear";
+  historyClearBtn.classList.remove("armed");
+}
+
+// Two taps to wipe the list, so a stray tap does not lose it.
+function onClearHistory() {
+  if (history.length === 0) return;
+  if (!clearArmed) {
+    clearArmed = true;
+    historyClearBtn.textContent = "Tap again";
+    historyClearBtn.classList.add("armed");
+    clearTimer = window.setTimeout(disarmClear, 3000);
+    return;
+  }
+  disarmClear();
+  history = [];
+  saveHistory();
+  renderHistory();
+}
+
+historyBtn.addEventListener("click", openHistory);
+historyCloseBtn.addEventListener("click", closeHistory);
+historyBackdrop.addEventListener("click", closeHistory);
+historyClearBtn.addEventListener("click", onClearHistory);
 
 /* ---------- live preview of the running expression ---------- */
 
@@ -204,8 +343,7 @@ async function evaluateNow() {
 
   try {
     const result = evaluateExpression(text);
-    history = [{ expression: text, result }, ...history].slice(0, 20);
-    renderHistory();
+    addHistoryEntry(text, result);
     expression = "";
     answer = result;
     justEvaluated = true;
@@ -247,7 +385,7 @@ function handleKey(key) {
     justEvaluated && (OPERATORS.includes(key) || key === "%" || key === "±");
 
   if (continuesFromAnswer) {
-    expression = answer ?? "";
+    expression = chainable(answer ?? "");
     justEvaluated = false;
   }
 
@@ -309,6 +447,11 @@ keysEl.addEventListener("click", (event) => {
 window.addEventListener("keydown", (event) => {
   const target = event.target;
   if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+    return;
+  }
+
+  if (!historySheet.hidden) {
+    if (event.key === "Escape") closeHistory();
     return;
   }
 
