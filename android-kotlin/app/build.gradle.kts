@@ -37,4 +37,7 @@ android {
 
 dependencies {
     testImplementation("junit:junit:4.13.2")
+    // android.jar only ships stubs for org.json, which throw in JVM unit tests;
+    // this gives the tests a real implementation (test classpath only).
+    testImplementation("org.json:json:20240303")
 }
