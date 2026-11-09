@@ -20,6 +20,13 @@
       <section class="view active" id="view-calc">
       <div class="display">
         <div class="display-top">
+          <button class="icon-btn" id="lang-btn" aria-label="Language">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8" />
+              <path d="M3.2 12h17.6M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"
+                    fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+            </svg>
+          </button>
           <button class="icon-btn" id="history-btn" aria-label="History">
             <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
               <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8" />
@@ -82,7 +89,7 @@
     <div class="sheet-backdrop" id="history-backdrop" hidden></div>
     <aside class="sheet" id="history-sheet" hidden aria-label="Calculation history">
       <header class="sheet-header">
-        <h2 class="sheet-title">History</h2>
+        <h2 class="sheet-title" id="history-title">History</h2>
         <div class="sheet-actions">
           <button class="sheet-btn danger" id="history-clear">Clear</button>
           <button class="sheet-btn" id="history-close">Close</button>
@@ -98,6 +105,16 @@
       <button class="text-menu-btn" id="text-menu-paste" role="menuitem">Paste</button>
     </div>
 
+    <div class="sheet-backdrop" id="lang-backdrop" hidden></div>
+    <aside class="sheet" id="lang-sheet" hidden aria-label="Language">
+      <header class="sheet-header">
+        <h2 class="sheet-title" id="lang-title">Language</h2>
+        <button class="sheet-btn" id="lang-close">Close</button>
+      </header>
+      <div class="sheet-body" id="lang-list"></div>
+    </aside>
+
+    <script src="i18n.js" defer></script>
     <script src="main.js" defer></script>
   </body>
 </html>

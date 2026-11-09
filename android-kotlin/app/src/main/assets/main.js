@@ -23,6 +23,49 @@ const keysEl = document.getElementById("keys");
 
 const OPERATORS = ["+", "-", "*", "/", "^"];
 
+const LANG_KEY = "calculator.lang.v1";
+const langBtn = document.getElementById("lang-btn");
+const langSheet = document.getElementById("lang-sheet");
+const langBackdrop = document.getElementById("lang-backdrop");
+const langListEl = document.getElementById("lang-list");
+const langTitleEl = document.getElementById("lang-title");
+const langCloseBtn = document.getElementById("lang-close");
+const historyTitleEl = document.getElementById("history-title");
+
+function supportedLang(code) {
+  if (!code) return null;
+  return I18N_LANGS.some((entry) => entry.code === code) ? code : null;
+}
+
+function detectLang() {
+  try {
+    const stored = supportedLang(window.localStorage.getItem(LANG_KEY));
+    if (stored) return stored;
+  } catch {
+    /* storage unavailable */
+  }
+
+  const candidates = [];
+  if (window.navigator) {
+    if (Array.isArray(window.navigator.languages)) candidates.push(...window.navigator.languages);
+    if (window.navigator.language) candidates.push(window.navigator.language);
+  }
+
+  for (const candidate of candidates) {
+    const base = String(candidate).split("-")[0].toLowerCase();
+    const match = supportedLang(base);
+    if (match) return match;
+  }
+  return "en";
+}
+
+let lang = detectLang();
+
+function t(key) {
+  return i18nUi(lang, key);
+}
+
+
 let expression = "";
 let answer = null;
 let justEvaluated = false;
@@ -31,6 +74,8 @@ const HISTORY_KEY = "calculator.history.v1";
 
 let history = loadHistory();
 let previewSequence = 0;
+
+
 
 /* ---------- rendering ---------- */
 
@@ -46,7 +91,8 @@ function pretty(text) {
   for (const [pattern, replacement] of PRETTY) {
     out = out.replace(pattern, replacement);
   }
-  return out;
+  // numbers are shown in the selected language's own digits
+  return localiseDigits(out, lang);
 }
 
 function render() {
@@ -498,8 +544,11 @@ window.addEventListener("keydown", (event) => {
     return;
   }
 
-  if (!historySheet.hidden) {
-    if (event.key === "Escape") closeHistory();
+  if (!historySheet.hidden || !langSheet.hidden) {
+    if (event.key === "Escape") {
+      closeHistory();
+      closeLanguageSheet();
+    }
     return;
   }
 
@@ -559,7 +608,7 @@ function renderChips() {
     ...catalog.map((group) => {
       const chip = document.createElement("button");
       chip.className = group.name === activeCategory ? "chip active" : "chip";
-      chip.textContent = group.name;
+      chip.textContent = i18nCategory(lang, group.name);
       chip.addEventListener("click", () => selectCategory(group.name));
       return chip;
     }),
@@ -574,7 +623,8 @@ function renderConversionList() {
       const button = document.createElement("button");
       const selected = activeConversion !== null && activeConversion.id === item.id;
       button.className = selected ? "conv-item active" : "conv-item";
-      button.textContent = item.label;
+      button.textContent = i18nConversionLabel(lang, item.id);
+      button.dir = "auto";
       button.addEventListener("click", () => selectConversion(item));
       return button;
     }),
@@ -599,7 +649,10 @@ function selectConversion(item) {
 }
 
 function updateConversionLabel() {
-  convLabelEl.textContent = activeConversion ? activeConversion.label : "";
+  convLabelEl.textContent = activeConversion
+    ? i18nConversionLabel(lang, activeConversion.id)
+    : "";
+  convLabelEl.dir = "auto";
 }
 
 function runConversion() {
@@ -723,7 +776,7 @@ function copyFromDisplay() {
 // Clipboard text is pasted as an expression, so keep only what the engine
 // understands and normalise the symbols the display shows.
 function sanitiseInput(text) {
-  return String(text)
+  return asciiDigits(String(text), lang)
     .replace(/\u00d7/g, "*")
     .replace(/\u00f7/g, "/")
     .replace(/[\u2212\u2013\u2014]/g, "-")
@@ -816,5 +869,86 @@ window.addEventListener("keydown", (event) => {
 });
 
 
+/* ---------- language ---------- */
+
+
+function applyLanguage() {
+  document.documentElement.lang = lang;
+  document.documentElement.dir = "ltr";
+
+  tabCalc.textContent = t("calculator");
+  tabConvert.textContent = t("converter");
+
+  historyTitleEl.textContent = t("history");
+  historyCloseBtn.textContent = t("close");
+  historyEmptyEl.textContent = t("empty");
+  if (!clearArmed) historyClearBtn.textContent = t("clear");
+
+  textMenuCopy.textContent = t("copy");
+  textMenuPaste.textContent = t("paste");
+
+  langTitleEl.textContent = t("language");
+  langCloseBtn.textContent = t("close");
+  langBtn.setAttribute("aria-label", t("language"));
+  historyBtn.setAttribute("aria-label", t("history"));
+
+  // the keypad's digits in the language's own numerals
+  for (let digit = 0; digit <= 9; digit += 1) {
+    const button = keysEl.querySelector(`.key[data-key="${digit}"]`);
+    if (button) button.textContent = localiseDigits(String(digit), lang);
+  }
+
+  renderLanguageList();
+  renderChips();
+  renderConversionList();
+  updateConversionLabel();
+  renderHistory();
+  render();
+  updatePreview();
+}
+
+function renderLanguageList() {
+  langListEl.replaceChildren(
+    ...I18N_LANGS.map((entry) => {
+      const button = document.createElement("button");
+      button.className = entry.code === lang ? "lang-item active" : "lang-item";
+      button.textContent = entry.name;
+      button.dir = "auto";
+      button.addEventListener("click", () => {
+        lang = entry.code;
+        try {
+          window.localStorage.setItem(LANG_KEY, lang);
+        } catch {
+          /* storage unavailable */
+        }
+        applyLanguage();
+        closeLanguageSheet();
+      });
+      return button;
+    }),
+  );
+}
+
+function openLanguageSheet() {
+  renderLanguageList();
+  langBackdrop.hidden = false;
+  langSheet.hidden = false;
+  nextFrame(() => langSheet.classList.add("open"));
+}
+
+function closeLanguageSheet() {
+  langSheet.classList.remove("open");
+  window.setTimeout(() => {
+    langSheet.hidden = true;
+    langBackdrop.hidden = true;
+  }, 180);
+}
+
+langBtn.addEventListener("click", openLanguageSheet);
+langCloseBtn.addEventListener("click", closeLanguageSheet);
+langBackdrop.addEventListener("click", closeLanguageSheet);
+
+
 render();
 renderHistory();
+applyLanguage();
