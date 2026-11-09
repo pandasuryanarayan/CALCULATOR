@@ -6,19 +6,19 @@ evaluates arithmetic expressions, and converts between 34 pairs of units across
 seven categories.
 
 **[Download the latest APK →](https://github.com/pandasuryanarayan/CALCULATOR/releases/latest)**
-(143 KB, signed, Android 7.0+)
+(151 KB, signed, Android 7.0+)
 
 | | |
 |---|---|
 | Package | `com.suryanarayan.calculator.kotlin` |
-| Version | 0.5.1 (versionCode 6) |
+| Version | 0.6.0 (versionCode 7) |
 | Minimum Android | 7.0 (SDK 24) |
-| APK size | ~143 KB (R8 minified, resource-shrunk) |
+| APK size | ~151 KB (R8 minified, resource-shrunk) |
 | Licence | GPL-3.0 |
 
 ## Install
 
-1. Download `Calculator-Kotlin-0.5.1-android.apk` from the
+1. Download `Calculator-Kotlin-0.6.0-android.apk` from the
    [latest release](https://github.com/pandasuryanarayan/CALCULATOR/releases/latest).
 2. Copy it to the phone and open it, or run `adb install Calculator-Kotlin-0.3.0-android.apk`.
 3. Allow "install unknown apps" for your browser or file manager when prompted.
@@ -65,6 +65,30 @@ A 4×6 keypad with a live preview of the running expression.
 | Volume | litres→ml, ml→litres, m³→cm³, cm³→m³ |
 | Mass | kg→g, g→kg, tons→kg, kg→tons |
 | Temperature | °C→K, K→°C, °C→°F, °F→°C, °F→K, K→°F |
+
+## Languages
+
+The globe button in the top-right corner switches between **English and 14
+Indian languages**: Assamese, Bengali, Gujarati, Hindi, Kannada, Kashmiri,
+Malayalam, Marathi, Nepali, Odia, Punjabi, Sanskrit, Tamil and Telugu. The app
+opens in your device language when it is one of them, and remembers your choice.
+
+Three things are localised:
+
+- **Interface text** — tabs, history sheet, Clear / Tap again / Close, the empty
+  state, Copy / Paste.
+- **Numerals** — the display, result preview, history and the keypad digits use
+  the language's own digits: `०१२३` Devanagari, `০১২৩` Bengali/Assamese,
+  `੦੧੨੩` Gurmukhi, `૦૧૨૩` Gujarati, `୦୧୨୩` Odia, `௦௧௨௩` Tamil, `౦౧౨౩` Telugu,
+  `೦೧೨೩` Kannada, `൦൧൨൩` Malayalam, `۰۱۲۳` Kashmiri.
+- **Unit names** — the 34 conversions show real words, not abbreviations:
+  `cm → m` reads `सेंटीमीटर → मीटर`, `சென்டிமீட்டர் → மீட்டர்`,
+  `চেণ্টিমিটাৰ → মিটাৰ`, and so on.
+
+The engine itself never sees a translated character: numbers are localised only
+when drawn, and pasted text is mapped back from native digits before it is
+evaluated (`१२.५*२` pastes as `12.5*2`). All the strings live in one file,
+`app/src/main/assets/i18n.js`.
 
 ## How it works
 
@@ -127,7 +151,7 @@ Release builds run **R8 with code shrinking, obfuscation and resource
 shrinking** (`isMinifyEnabled` + `isShrinkResources`), with keep rules for the
 JavaScript bridge — the WebView resolves those methods reflectively, so the
 class and its `@JavascriptInterface` methods must survive. That takes the APK
-from 715 KB to 143 KB. The signing key lives in repository secrets — `ANDROID_KEYSTORE_BASE64`,
+from 715 KB to 151 KB. The signing key lives in repository secrets — `ANDROID_KEYSTORE_BASE64`,
 `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` — and
 is never committed. Every future release must be signed with the same key, or
 Android refuses to upgrade in place.
