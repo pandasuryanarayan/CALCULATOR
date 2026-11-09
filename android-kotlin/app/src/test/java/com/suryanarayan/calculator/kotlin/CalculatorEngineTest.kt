@@ -5,7 +5,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
 
-/** Mirrors the Rust test suite in the Android-tauri-rust branch. */
+/** Grammar, error paths and number formatting. */
 class CalculatorEngineTest {
 
     private fun value(expression: String): Double = CalculatorEngine.evaluate(expression)

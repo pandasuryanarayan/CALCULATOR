@@ -15,8 +15,8 @@ import kotlin.math.tan
 /**
  * The arithmetic engine: a tokenizer plus a recursive descent parser.
  *
- * This is a direct port of the Rust engine in the `Android-tauri-rust` branch,
- * so both apps accept exactly the same expressions and report the same errors.
+ * Deliberately dependency-free, so it unit-tests on the JVM and adds nothing
+ * to the APK.
  *
  * Grammar, lowest precedence first:
  *
@@ -218,7 +218,7 @@ object CalculatorEngine {
 
     /**
      * At most ten decimals, trailing zeros removed, scientific notation outside
-     * 1e-9 .. 1e12 - the same rules as the Rust build.
+     * 1e-9 .. 1e12.
      */
     fun format(value: Double): String {
         if (!value.isFinite()) return "Error"
