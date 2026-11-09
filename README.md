@@ -11,14 +11,14 @@ seven categories.
 | | |
 |---|---|
 | Package | `com.suryanarayan.calculator.kotlin` |
-| Version | 0.5.0 (versionCode 5) |
+| Version | 0.5.1 (versionCode 6) |
 | Minimum Android | 7.0 (SDK 24) |
 | APK size | ~143 KB (R8 minified, resource-shrunk) |
 | Licence | GPL-3.0 |
 
 ## Install
 
-1. Download `Calculator-Kotlin-0.5.0-android.apk` from the
+1. Download `Calculator-Kotlin-0.5.1-android.apk` from the
    [latest release](https://github.com/pandasuryanarayan/CALCULATOR/releases/latest).
 2. Copy it to the phone and open it, or run `adb install Calculator-Kotlin-0.3.0-android.apk`.
 3. Allow "install unknown apps" for your browser or file manager when prompted.
