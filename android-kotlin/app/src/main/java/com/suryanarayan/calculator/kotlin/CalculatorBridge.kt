@@ -45,6 +45,27 @@ class CalculatorBridge(private val context: Context) {
         }
     }
 
+    /** Read the clipboard, for the expression's Paste action. */
+    @JavascriptInterface
+    fun paste(): String {
+        return try {
+            val clipboard =
+                context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = clipboard.primaryClip
+            val text = if (clip != null && clip.itemCount > 0) {
+                clip.getItemAt(0).coerceToText(context).toString()
+            } else {
+                ""
+            }
+            JSONObject().put("ok", true).put("text", text).toString()
+        } catch (error: Exception) {
+            JSONObject()
+                .put("ok", false)
+                .put("error", error.message ?: "Could not paste")
+                .toString()
+        }
+    }
+
     /** The unit-conversion catalogue, grouped by category. */
     @JavascriptInterface
     fun catalog(): String = UnitConverter.catalogJson()

@@ -407,6 +407,11 @@ async function evaluateNow() {
 /* ---------- key handling ---------- */
 
 function handleKey(key) {
+  if (window.getSelection) {
+    const selection = window.getSelection();
+    if (selection && selection.removeAllRanges) selection.removeAllRanges();
+  }
+
   if (key === "=") {
     evaluateNow();
     return;
@@ -644,6 +649,150 @@ document.addEventListener("pointerdown", (event) => {
   document.addEventListener("pointerup", release);
   document.addEventListener("pointercancel", release);
 });
+
+/* ---------- long press on the expression: copy / paste ---------- */
+
+const textMenu = document.getElementById("text-menu");
+const textMenuCopy = document.getElementById("text-menu-copy");
+const textMenuPaste = document.getElementById("text-menu-paste");
+
+let pressTimer = 0;
+let pressStart = null;
+
+function shownExpression() {
+  if (justEvaluated && answer !== null) return pretty(answer);
+  return expression ? pretty(expression) : "0";
+}
+
+function showTextMenu(x, y) {
+  const margin = 12;
+  const width = textMenu.offsetWidth || 180;
+  const left = Math.min(Math.max(x, width / 2 + margin), window.innerWidth - width / 2 - margin);
+  const top = Math.max(y - 12, 60);
+
+  textMenu.style.left = `${left}px`;
+  textMenu.style.top = `${top}px`;
+  textMenu.hidden = false;
+  textMenuCopy.disabled = shownExpression() === "0" && !selectedText();
+}
+
+function hideTextMenu() {
+  textMenu.hidden = true;
+}
+
+function selectedText() {
+  try {
+    return window.getSelection ? String(window.getSelection()).trim() : "";
+  } catch {
+    return "";
+  }
+}
+
+function copyFromDisplay() {
+  // Whatever the user selected, or the whole expression if nothing is selected.
+  const value = selectedText() || shownExpression();
+  if (!value) {
+    hideTextMenu();
+    return;
+  }
+
+  try {
+    if (window.AndroidCalc && typeof window.AndroidCalc.copy === "function") {
+      window.AndroidCalc.copy(value);
+    } else if (window.navigator && window.navigator.clipboard) {
+      window.navigator.clipboard.writeText(value);
+    }
+  } catch {
+    /* nothing to do if the clipboard refuses */
+  }
+
+  hideTextMenu();
+}
+
+// Clipboard text is pasted as an expression, so keep only what the engine
+// understands and normalise the symbols the display shows.
+function sanitiseInput(text) {
+  return String(text)
+    .replace(/\u00d7/g, "*")
+    .replace(/\u00f7/g, "/")
+    .replace(/[\u2212\u2013\u2014]/g, "-")
+    .replace(/\u221a/g, "sqrt")
+    .replace(/[^0-9a-zA-Z+\-*/().^% ]/g, "")
+    .trim();
+}
+
+function pasteIntoDisplay() {
+  let text = "";
+
+  try {
+    if (window.AndroidCalc && typeof window.AndroidCalc.paste === "function") {
+      const result = JSON.parse(window.AndroidCalc.paste());
+      if (result.ok) text = result.text || "";
+    } else if (window.navigator && window.navigator.clipboard && window.navigator.clipboard.readText) {
+      text = "";
+    }
+  } catch {
+    text = "";
+  }
+
+  const clean = sanitiseInput(text);
+  hideTextMenu();
+  if (!clean) return;
+
+  if (justEvaluated) {
+    expression = "";
+    answer = null;
+    justEvaluated = false;
+  }
+
+  expression += clean;
+  render();
+  updatePreview();
+}
+
+function beginLongPress(event) {
+  pressStart = { x: event.clientX || 0, y: event.clientY || 0 };
+  window.clearTimeout(pressTimer);
+  pressTimer = window.setTimeout(() => {
+    showTextMenu(pressStart.x, pressStart.y);
+  }, 450);
+}
+
+function cancelLongPress() {
+  window.clearTimeout(pressTimer);
+}
+
+expressionEl.addEventListener("pointerdown", beginLongPress);
+expressionEl.addEventListener("pointermove", (event) => {
+  if (!pressStart) return;
+  const dx = (event.clientX || 0) - pressStart.x;
+  const dy = (event.clientY || 0) - pressStart.y;
+  if (Math.hypot(dx, dy) > 12) cancelLongPress();
+});
+expressionEl.addEventListener("pointerup", cancelLongPress);
+expressionEl.addEventListener("pointercancel", cancelLongPress);
+expressionEl.addEventListener("pointerleave", cancelLongPress);
+
+// Android WebView also fires contextmenu on long press; keep one menu, not two.
+expressionEl.addEventListener("contextmenu", (event) => {
+  event.preventDefault();
+  cancelLongPress();
+  showTextMenu(event.clientX || window.innerWidth / 2, event.clientY || 120);
+});
+
+textMenuCopy.addEventListener("click", copyFromDisplay);
+textMenuPaste.addEventListener("click", pasteIntoDisplay);
+
+document.addEventListener("pointerdown", (event) => {
+  if (textMenu.hidden) return;
+  if (event.target === textMenu || textMenu.contains(event.target)) return;
+  hideTextMenu();
+});
+
+window.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") hideTextMenu();
+});
+
 
 render();
 renderHistory();
