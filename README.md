@@ -11,16 +11,16 @@ seven categories.
 | | |
 |---|---|
 | Package | `com.suryanarayan.calculator.kotlin` |
-| Version | 0.2.0 (versionCode 2) |
+| Version | 0.3.0 (versionCode 3) |
 | Minimum Android | 7.0 (SDK 24) |
 | APK size | ~715 KB |
 | Licence | GPL-3.0 |
 
 ## Install
 
-1. Download `Calculator-Kotlin-0.2.0-android.apk` from the
+1. Download `Calculator-Kotlin-0.3.0-android.apk` from the
    [latest release](https://github.com/pandasuryanarayan/CALCULATOR/releases/latest).
-2. Copy it to the phone and open it, or run `adb install Calculator-Kotlin-0.2.0-android.apk`.
+2. Copy it to the phone and open it, or run `adb install Calculator-Kotlin-0.3.0-android.apk`.
 3. Allow "install unknown apps" for your browser or file manager when prompted.
 
 It is signed with a real release key, not a debug key, so updates install over
@@ -38,7 +38,11 @@ A 4×6 keypad with a live preview of the running expression.
 - constants: `pi`, `e`
 - live `= result` preview as you type, and chained evaluation after `=`:
   `2+3=` then `×2=` gives `10`
-- the last 20 calculations, newest first
+- **history**: the clock button in the top-right corner opens a sheet with the
+  last 20 calculations, newest first. It survives restarts (stored in the
+  WebView's local storage), tapping a plain-number result puts it back into the
+  expression, and **Clear** needs two taps ("Tap again") so a stray tap cannot
+  wipe it. The badge on the button shows how many entries are stored.
 - results formatted to at most ten decimals, scientific notation outside
   `1e-9 .. 1e12`
 
