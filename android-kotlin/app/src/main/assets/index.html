@@ -12,13 +12,19 @@
   </head>
   <body>
     <main class="app">
-      <section class="display">
+      <header class="tabs">
+        <button class="tab active" id="tab-calc" data-view="calc">Calculator</button>
+        <button class="tab" id="tab-convert" data-view="convert">Converter</button>
+      </header>
+
+      <section class="view active" id="view-calc">
+      <div class="display">
         <div class="history" id="history" aria-hidden="true"></div>
         <div class="expression" id="expression" aria-live="polite">0</div>
         <div class="preview" id="preview"></div>
-      </section>
+      </div>
 
-      <section class="keys" id="keys">
+      <div class="keys" id="keys">
         <button class="key fn" data-key="AC">AC</button>
         <button class="key fn" data-key="()">( )</button>
         <button class="key fn" data-key="%">%</button>
@@ -47,6 +53,18 @@
         <button class="key" data-key="±">±</button>
         <button class="key" data-key="0">0</button>
         <button class="key" data-key=".">.</button>
+      </div>
+      </section>
+
+      <section class="view" id="view-convert">
+        <div class="conv-display">
+          <span class="conv-label" id="conv-label"></span>
+          <input class="conv-input" id="conv-input" type="text" inputmode="decimal"
+                 autocomplete="off" spellcheck="false" placeholder="0" />
+          <div class="conv-result" id="conv-result">0</div>
+        </div>
+        <div class="chips" id="chips"></div>
+        <div class="conv-list" id="conv-list"></div>
       </section>
     </main>
 

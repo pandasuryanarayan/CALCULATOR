@@ -25,4 +25,26 @@ class CalculatorBridge {
                 .toString()
         }
     }
+
+    /** The unit-conversion catalogue, grouped by category. */
+    @JavascriptInterface
+    fun catalog(): String = UnitConverter.catalogJson()
+
+    /** Convert `value` with the conversion `id`; returns JSON like evaluate(). */
+    @JavascriptInterface
+    fun convert(id: String, value: String): String {
+        return try {
+            val parsed = value.trim().toDoubleOrNull()
+                ?: throw CalcException("Enter a number")
+            JSONObject()
+                .put("ok", true)
+                .put("value", CalculatorEngine.format(UnitConverter.convert(id, parsed)))
+                .toString()
+        } catch (error: Exception) {
+            JSONObject()
+                .put("ok", false)
+                .put("error", error.message ?: "Conversion failed")
+                .toString()
+        }
+    }
 }

@@ -307,6 +307,11 @@ keysEl.addEventListener("click", (event) => {
 
 // Desktop convenience: a physical keyboard and number pad work too.
 window.addEventListener("keydown", (event) => {
+  const target = event.target;
+  if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+    return;
+  }
+
   const map = {
     Enter: "=",
     "=": "=",
@@ -333,6 +338,112 @@ window.addEventListener("keydown", (event) => {
   flash(keysEl.querySelector(`[data-key="${CSS.escape(key)}"]`));
   handleKey(key);
 });
+
+/* ---------- unit converter ---------- */
+
+const viewCalc = document.getElementById("view-calc");
+const viewConvert = document.getElementById("view-convert");
+const tabCalc = document.getElementById("tab-calc");
+const tabConvert = document.getElementById("tab-convert");
+const chipsEl = document.getElementById("chips");
+const convListEl = document.getElementById("conv-list");
+const convLabelEl = document.getElementById("conv-label");
+const convInputEl = document.getElementById("conv-input");
+const convResultEl = document.getElementById("conv-result");
+
+let catalog = [];
+let activeCategory = null;
+let activeConversion = null;
+
+function showView(name) {
+  const isCalculator = name === "calc";
+  viewCalc.classList.toggle("active", isCalculator);
+  viewConvert.classList.toggle("active", !isCalculator);
+  tabCalc.classList.toggle("active", isCalculator);
+  tabConvert.classList.toggle("active", !isCalculator);
+}
+
+function renderChips() {
+  chipsEl.replaceChildren(
+    ...catalog.map((group) => {
+      const chip = document.createElement("button");
+      chip.className = group.name === activeCategory ? "chip active" : "chip";
+      chip.textContent = group.name;
+      chip.addEventListener("click", () => selectCategory(group.name));
+      return chip;
+    }),
+  );
+}
+
+function renderConversionList() {
+  const group = catalog.find((entry) => entry.name === activeCategory);
+  if (!group) return;
+  convListEl.replaceChildren(
+    ...group.items.map((item) => {
+      const button = document.createElement("button");
+      const selected = activeConversion !== null && activeConversion.id === item.id;
+      button.className = selected ? "conv-item active" : "conv-item";
+      button.textContent = item.label;
+      button.addEventListener("click", () => selectConversion(item));
+      return button;
+    }),
+  );
+}
+
+function selectCategory(name) {
+  activeCategory = name;
+  const group = catalog.find((entry) => entry.name === name);
+  activeConversion = group && group.items.length ? group.items[0] : null;
+  renderChips();
+  renderConversionList();
+  updateConversionLabel();
+  runConversion();
+}
+
+function selectConversion(item) {
+  activeConversion = item;
+  renderConversionList();
+  updateConversionLabel();
+  runConversion();
+}
+
+function updateConversionLabel() {
+  convLabelEl.textContent = activeConversion ? activeConversion.label : "";
+}
+
+function runConversion() {
+  if (!activeConversion) {
+    convResultEl.textContent = "";
+    return;
+  }
+
+  const raw = convInputEl.value.trim();
+  if (raw === "") {
+    convResultEl.textContent = "0";
+    convResultEl.classList.remove("error");
+    return;
+  }
+
+  if (!window.AndroidCalc || !window.AndroidCalc.convert) {
+    convResultEl.textContent = "\u2014";
+    return;
+  }
+
+  const result = JSON.parse(window.AndroidCalc.convert(activeConversion.id, raw));
+  convResultEl.textContent = result.ok ? pretty(result.value) : result.error;
+  convResultEl.classList.toggle("error", !result.ok);
+}
+
+function initConverter() {
+  if (!window.AndroidCalc || !window.AndroidCalc.catalog) return;
+  catalog = JSON.parse(window.AndroidCalc.catalog());
+  if (catalog.length) selectCategory(catalog[0].name);
+}
+
+tabCalc.addEventListener("click", () => showView("calc"));
+tabConvert.addEventListener("click", () => showView("convert"));
+convInputEl.addEventListener("input", runConversion);
+initConverter();
 
 render();
 renderHistory();
