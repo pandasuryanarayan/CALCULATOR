@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="color-scheme" content="dark" />
+    <title>Calculator</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="display">
+        <div class="history" id="history" aria-hidden="true"></div>
+        <div class="expression" id="expression" aria-live="polite">0</div>
+        <div class="preview" id="preview"></div>
+      </section>
+
+      <section class="keys" id="keys">
+        <button class="key fn" data-key="AC">AC</button>
+        <button class="key fn" data-key="()">( )</button>
+        <button class="key fn" data-key="%">%</button>
+        <button class="key op" data-key="/">÷</button>
+
+        <button class="key fn" data-key="sqrt(">√</button>
+        <button class="key fn" data-key="^">x<sup>y</sup></button>
+        <button class="key fn" data-key="BACK" aria-label="Backspace">⌫</button>
+        <button class="key op" data-key="*">×</button>
+
+        <button class="key" data-key="7">7</button>
+        <button class="key" data-key="8">8</button>
+        <button class="key" data-key="9">9</button>
+        <button class="key op" data-key="-">−</button>
+
+        <button class="key" data-key="4">4</button>
+        <button class="key" data-key="5">5</button>
+        <button class="key" data-key="6">6</button>
+        <button class="key op" data-key="+">+</button>
+
+        <button class="key" data-key="1">1</button>
+        <button class="key" data-key="2">2</button>
+        <button class="key" data-key="3">3</button>
+        <button class="key equals" data-key="=" aria-label="Equals">=</button>
+
+        <button class="key" data-key="±">±</button>
+        <button class="key" data-key="0">0</button>
+        <button class="key" data-key=".">.</button>
+      </section>
+    </main>
+
+    <script src="main.js" defer></script>
+  </body>
+</html>
