@@ -6,19 +6,19 @@ evaluates arithmetic expressions, and converts between 34 pairs of units across
 seven categories.
 
 **[Download the latest APK →](https://github.com/pandasuryanarayan/CALCULATOR/releases/latest)**
-(139 KB, signed, Android 7.0+)
+(143 KB, signed, Android 7.0+)
 
 | | |
 |---|---|
 | Package | `com.suryanarayan.calculator.kotlin` |
-| Version | 0.4.0 (versionCode 4) |
+| Version | 0.5.0 (versionCode 5) |
 | Minimum Android | 7.0 (SDK 24) |
-| APK size | ~139 KB (R8 minified, resource-shrunk) |
+| APK size | ~143 KB (R8 minified, resource-shrunk) |
 | Licence | GPL-3.0 |
 
 ## Install
 
-1. Download `Calculator-Kotlin-0.4.0-android.apk` from the
+1. Download `Calculator-Kotlin-0.5.0-android.apk` from the
    [latest release](https://github.com/pandasuryanarayan/CALCULATOR/releases/latest).
 2. Copy it to the phone and open it, or run `adb install Calculator-Kotlin-0.3.0-android.apk`.
 3. Allow "install unknown apps" for your browser or file manager when prompted.
@@ -46,6 +46,11 @@ A 4×6 keypad with a live preview of the running expression.
   has a **copy button** that puts that result on the clipboard.
 - results formatted to at most ten decimals, scientific notation outside
   `1e-9 .. 1e12`
+- **selectable display**: long-press the number to get Android's selection
+  handles and a small menu with **Copy** (the selection, or the whole
+  expression) and **Paste** (clipboard text, normalised — `×`→`*`, `÷`→`/`,
+  `√`→`sqrt`, anything the engine cannot read dropped). Both go through
+  Android's ClipboardManager via the bridge, so no WebView clipboard limits.
 
 ### Converter
 
@@ -122,7 +127,7 @@ Release builds run **R8 with code shrinking, obfuscation and resource
 shrinking** (`isMinifyEnabled` + `isShrinkResources`), with keep rules for the
 JavaScript bridge — the WebView resolves those methods reflectively, so the
 class and its `@JavascriptInterface` methods must survive. That takes the APK
-from 715 KB to 139 KB. The signing key lives in repository secrets — `ANDROID_KEYSTORE_BASE64`,
+from 715 KB to 143 KB. The signing key lives in repository secrets — `ANDROID_KEYSTORE_BASE64`,
 `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` — and
 is never committed. Every future release must be signed with the same key, or
 Android refuses to upgrade in place.
