@@ -20,6 +20,13 @@
   padding: 0;
 }
 
+/* `hidden` only wins while nothing else sets a display value, and both the
+   sheet and the text menu are flex containers - without this they stay in the
+   layout even when marked hidden. */
+[hidden] {
+  display: none !important;
+}
+
 html,
 body {
   height: 100%;

@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 env:
-  APP_VERSION: 0.5.0
+  APP_VERSION: 0.5.1
 
 defaults:
   run:

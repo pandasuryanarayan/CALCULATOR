@@ -680,6 +680,17 @@ function hideTextMenu() {
   textMenu.hidden = true;
 }
 
+function clearSelection() {
+  try {
+    if (window.getSelection) {
+      const selection = window.getSelection();
+      if (selection && selection.removeAllRanges) selection.removeAllRanges();
+    }
+  } catch {
+    /* nothing to clear */
+  }
+}
+
 function selectedText() {
   try {
     return window.getSelection ? String(window.getSelection()).trim() : "";
@@ -783,11 +794,22 @@ expressionEl.addEventListener("contextmenu", (event) => {
 textMenuCopy.addEventListener("click", copyFromDisplay);
 textMenuPaste.addEventListener("click", pasteIntoDisplay);
 
-document.addEventListener("pointerdown", (event) => {
-  if (textMenu.hidden) return;
-  if (event.target === textMenu || textMenu.contains(event.target)) return;
-  hideTextMenu();
-});
+// Dismiss like Android does: any tap outside the menu, a scroll, a rotation,
+// Escape, or a key press. Capture phase so it runs before the tapped element.
+document.addEventListener(
+  "pointerdown",
+  (event) => {
+    if (textMenu.hidden) return;
+    if (textMenu.contains(event.target)) return;
+    clearSelection();
+    hideTextMenu();
+  },
+  true,
+);
+
+window.addEventListener("scroll", hideTextMenu, true);
+window.addEventListener("resize", hideTextMenu);
+window.addEventListener("orientationchange", hideTextMenu);
 
 window.addEventListener("keydown", (event) => {
   if (event.key === "Escape") hideTextMenu();
