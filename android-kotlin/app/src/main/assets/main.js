@@ -184,8 +184,8 @@ function toggleSign() {
 
 /* ---------- evaluate ---------- */
 
-// Tauri rejects with the plain string we returned from Rust, but a thrown
-// Error object also lands here in tests - normalise both.
+// The Kotlin bridge reports errors as a plain string message; a thrown Error
+// object also lands here in tests - normalise both.
 function errorText(error) {
   if (typeof error === "string") return error;
   if (error && typeof error.message === "string") return error.message;
