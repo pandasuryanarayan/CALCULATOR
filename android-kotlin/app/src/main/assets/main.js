@@ -106,13 +106,46 @@ function addHistoryEntry(expressionText, result) {
   renderHistory();
 }
 
+const COPY_ICONS = `
+  <svg class="icon-copy" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+    <rect x="9" y="9" width="11" height="11" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8" />
+    <path d="M15 5.5A2.5 2.5 0 0 0 12.5 3h-6A2.5 2.5 0 0 0 4 5.5v6A2.5 2.5 0 0 0 6.5 14"
+          fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+  </svg>
+  <svg class="icon-check" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+    <path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2"
+          stroke-linecap="round" stroke-linejoin="round" />
+  </svg>`;
+
+function copyResult(value, button) {
+  let copied = false;
+  try {
+    if (window.AndroidCalc && typeof window.AndroidCalc.copy === "function") {
+      copied = JSON.parse(window.AndroidCalc.copy(value)).ok === true;
+    } else if (window.navigator && window.navigator.clipboard) {
+      window.navigator.clipboard.writeText(value);
+      copied = true;
+    }
+  } catch {
+    copied = false;
+  }
+
+  if (!copied) return;
+  button.classList.add("copied");
+  window.setTimeout(() => button.classList.remove("copied"), 1200);
+}
+
 function renderHistory() {
   historyListEl.replaceChildren(
     ...history.map((entry) => {
       // Only plain decimals can be put back into the expression safely.
       const reusable = /^-?\d+(\.\d+)?$/.test(entry.result);
-      const row = document.createElement(reusable ? "button" : "div");
-      row.className = reusable ? "history-row" : "history-row static";
+
+      const row = document.createElement("div");
+      row.className = "history-row";
+
+      const text = document.createElement(reusable ? "button" : "div");
+      text.className = reusable ? "history-text" : "history-text static";
 
       const expressionPart = document.createElement("span");
       expressionPart.className = "history-expr";
@@ -122,10 +155,10 @@ function renderHistory() {
       resultPart.className = "history-result";
       resultPart.textContent = `= ${pretty(entry.result)}`;
 
-      row.append(expressionPart, resultPart);
+      text.append(expressionPart, resultPart);
 
       if (reusable) {
-        row.addEventListener("click", () => {
+        text.addEventListener("click", () => {
           expression = chainable(entry.result);
           answer = null;
           justEvaluated = false;
@@ -135,6 +168,16 @@ function renderHistory() {
         });
       }
 
+      const copy = document.createElement("button");
+      copy.className = "history-copy";
+      copy.setAttribute("aria-label", "Copy result");
+      copy.innerHTML = COPY_ICONS;
+      copy.addEventListener("click", (event) => {
+        event.stopPropagation();
+        copyResult(entry.result, copy);
+      });
+
+      row.append(text, copy);
       return row;
     }),
   );
@@ -587,6 +630,20 @@ tabCalc.addEventListener("click", () => showView("calc"));
 tabConvert.addEventListener("click", () => showView("convert"));
 convInputEl.addEventListener("input", runConversion);
 initConverter();
+// Flash the key from script as well as :active, so the inner glow always shows.
+document.addEventListener("pointerdown", (event) => {
+  const key = event.target && event.target.closest ? event.target.closest(".key") : null;
+  if (!key) return;
+
+  key.classList.add("pressed");
+  const release = () => {
+    key.classList.remove("pressed");
+    document.removeEventListener("pointerup", release);
+    document.removeEventListener("pointercancel", release);
+  };
+  document.addEventListener("pointerup", release);
+  document.addEventListener("pointercancel", release);
+});
 
 render();
 renderHistory();

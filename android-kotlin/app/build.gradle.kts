@@ -11,13 +11,15 @@ android {
         applicationId = "com.suryanarayan.calculator.kotlin"
         minSdk = 24
         targetSdk = 34
-        versionCode = 3
-        versionName = "0.3.0"
+        versionCode = 4
+        versionName = "0.4.0"
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // Full Android shrinking: R8 code shrink + obfuscate, and resource shrink.
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

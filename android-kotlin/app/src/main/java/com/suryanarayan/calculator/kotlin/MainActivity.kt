@@ -33,7 +33,7 @@ class MainActivity : Activity() {
             displayZoomControls = false
         }
 
-        webView.addJavascriptInterface(CalculatorBridge(), "AndroidCalc")
+        webView.addJavascriptInterface(CalculatorBridge(this), "AndroidCalc")
         webView.webViewClient = WebViewClient()
         webView.loadUrl("file:///android_asset/index.html")
     }

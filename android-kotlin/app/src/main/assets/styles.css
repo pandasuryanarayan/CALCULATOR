@@ -130,21 +130,44 @@ body {
   transition: transform 90ms ease-out, background 140ms ease-out;
 }
 
-.key sup {
-  font-size: 0.62em;
-  vertical-align: super;
+.key-label {
+  display: inline-block;
+  line-height: 1;
 }
 
-.key:active,
-.key.pressed {
-  transform: scale(0.95);
-  background: var(--key-active);
+/* The key is a flex container, so <sup> has to be inline text inside a
+   wrapper for the vertical-align to apply at all. */
+.key sup {
+  font-size: 0.58em;
+  line-height: 0;
+  vertical-align: super;
+  position: relative;
+  top: -0.42em;
+  margin-left: 0.04em;
 }
 
 .key.fn {
   background: var(--key-fn);
   color: var(--key-fn-text);
   font-size: clamp(0.95rem, 4.4vw, 1.25rem);
+}
+
+/* AC clears everything: warm and unmistakable. */
+.key.clear {
+  background: rgba(255, 122, 122, 0.16);
+  color: #ff9f9f;
+}
+
+/* brackets and percent: the grouping keys. */
+.key.group {
+  background: rgba(255, 196, 92, 0.14);
+  color: #ffc45c;
+}
+
+/* square root, power, backspace: the special functions. */
+.key.func {
+  background: rgba(162, 115, 255, 0.16);
+  color: #c6a8ff;
 }
 
 .key.op {
@@ -163,7 +186,7 @@ body {
 
 .key.equals:active,
 .key.equals.pressed {
-  transform: scale(0.95);
+  transform: scale(0.955);
   background: linear-gradient(135deg, var(--accent-2), var(--accent));
 }
 
@@ -483,13 +506,23 @@ body {
 
 .history-row {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  gap: 8px;
   width: 100%;
-  padding: 10px 12px;
-  border: none;
+  padding: 8px 10px;
   border-radius: 14px;
   background: var(--key);
+}
+
+.history-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 2px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
   color: var(--text);
   font-family: inherit;
   text-align: right;
@@ -497,8 +530,41 @@ body {
   touch-action: manipulation;
 }
 
-.history-row.static {
+.history-text.static {
   cursor: default;
+}
+
+.history-copy {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 11px;
+  background: var(--key-fn);
+  color: var(--muted);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: color 140ms ease-out, background 140ms ease-out;
+}
+
+.history-copy.copied {
+  color: var(--accent);
+  background: rgba(111, 157, 255, 0.18);
+}
+
+.history-copy .icon-check {
+  display: none;
+}
+
+.history-copy.copied .icon-copy {
+  display: none;
+}
+
+.history-copy.copied .icon-check {
+  display: block;
 }
 
 .history-expr {
@@ -518,4 +584,35 @@ body {
   color: var(--muted);
   font-size: 0.9rem;
   text-align: center;
+}
+
+/* ---------- pressed feedback ---------- */
+
+.key:active,
+.key.pressed {
+  transform: scale(0.955);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18),
+    inset 0 0 18px rgba(255, 255, 255, 0.18);
+  filter: brightness(1.15);
+}
+
+.key.equals:active,
+.key.equals.pressed {
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.28),
+    inset 0 0 20px rgba(255, 255, 255, 0.26),
+    0 10px 26px rgba(111, 157, 255, 0.32);
+}
+
+.tab:active,
+.chip:active,
+.conv-item:active,
+.sheet-btn:active,
+.icon-btn:active,
+.history-text:active,
+.history-copy:active {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+    inset 0 0 14px rgba(255, 255, 255, 0.14);
+  filter: brightness(1.12);
 }
